@@ -9,7 +9,7 @@ const GoogleStratergy=require("passport-google-oauth20").Strategy
 
 // authRoute.get("/google",passport.authenticate('google'),{scope:["profile","email","phone"]});
 
-authRoute.get("/auth/google/",
+authRoute.get("/auth/google",
     passport.authenticate("google", {
       scope: ["profile", "email", "phone"]
     })
