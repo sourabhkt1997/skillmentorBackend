@@ -41,7 +41,7 @@ authRoute.get("/google/callback", passport.authenticate('google', {
         {
           clientID:clientID,
           clientSecret:clientSecret,
-          callbackURL:"http://localhost:8600/google/callback",
+          callbackURL:"https://skillmentor.onrender.com/auth/google/callback",
           passReqToCallback:true,
         },
         async function (request, accessToken, refreshToken, profile,done) {
