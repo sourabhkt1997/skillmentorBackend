@@ -15,7 +15,7 @@ authRoute.get("/auth/google",
     })
   );
   
-authRoute.get("/google/callback", passport.authenticate('google', {
+authRoute.get("auth/google/callback", passport.authenticate('google', {
     session: false
   }), async (req, res) => {
     let user = req.user;
