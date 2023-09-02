@@ -28,7 +28,7 @@ instance.orders.create(options, function(err, order) {
 
 })
 
-application.post("api/payment/verify",(req,res)=>{
+paymentroute.post("api/payment/verify",(req,res)=>{
     
     let body=req.body.response.razorpay_order_id+"|"+req.body.response.razorpay_payment_id;
     var crypto=require("crypto")
