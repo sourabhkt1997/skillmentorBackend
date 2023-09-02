@@ -14,6 +14,7 @@ const app = express();
 app.use(express.json());
 let cookieparser=require("cookie-parser");
 const { slotRoute } = require("./routes/slot.route");
+const { paymentroute } = require("./routes/payment.route");
 app.use(cookieparser())
 app.use(cors());
 
@@ -24,6 +25,7 @@ app.get("/test", (req, res) => {
 app.use("/",authRoute)
 app.use("/user",userRoute)
 app.use("/slot",slotRoute)
+app.use("/payment",paymentroute)
 // app.use(authenticate);
 // app.use("/teacher", teacherRouter);
 // app.use(slotRoute);
