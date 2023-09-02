@@ -10,7 +10,7 @@ var instance = new Razorpay({
   });
 
 paymentroute.get("/",(req,res)=>{
-
+  res.send("welcome")
 }) 
 
 paymentroute.post("/create/orderId",(req,res)=>{
