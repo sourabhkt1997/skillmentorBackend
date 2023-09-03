@@ -37,8 +37,9 @@ slotRoute.post("/createSlot/:id", async (req, res) => {
 
 slotRoute.patch("/bookSlot/:id", async (req, res) => {
   let {id}=req.params
+  let {studentid}=req.body
   try {
-    await slotModel.findByIdAndUpdate({student_id:id,status:true});
+    await slotModel.findByIdAndUpdate({_id:id},{student_id:studentid,status:true});
     res.status(200).send({msg:"slot booked"});
   } catch (error) {
     res.status(400).send({msg:"something went wrong"});

@@ -237,7 +237,7 @@ userRoute.get("/search", async (req, res) => {
   
 
 });
-
+//  to get all the tutor that admin verified
 userRoute.get("/appointedtutor",async(req,res)=>{
   let x={role:"tutor",appointed:true}
   let {id}=req.query
@@ -329,6 +329,9 @@ if(typeof subject!=="object"){
       res.status(500).json({ error: 'An error occurred while fetching data.' });
   }
 });
+
+
+
 
 
 
