@@ -16,7 +16,7 @@ slotRoute.get("/allslotTeacher/:id", async (req, res) => {
 slotRoute.get("/allslotStudent/:id", async (req, res) => {
   let {id}=req.params
   try {
-    let allSlot = await slotModel.find({student_id:id});
+    let allSlot = await slotModel.find({student_id:id}).populate("teacher_id");
     res.status(200).send({msg:allSlot});
   } catch (error) {
     res.status(400).send({msg:"something went wrong"});
