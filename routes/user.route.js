@@ -253,7 +253,7 @@ userRoute.get("/appointedtutor", async (req, res) => {
       data.map(async (ele) => {
         if (ele.uploadedimage) {
           const imagePath = ele.uploadedimage;
-          const imageBuffer = await fs.promises.readFile(imagePath); // Use async file reading
+          const imageBuffer = fs.readFileSync(imagePath);
           const imageBase64 = imageBuffer.toString('base64');
           ele.uploadedimage = imageBase64;
         }
