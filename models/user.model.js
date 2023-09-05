@@ -16,6 +16,7 @@ const userSchema = mongoose.Schema(
     subject: { type: String,default:null},
     image: { type:String},
     about: { type: String },
+    uploadedimage:{type:String},
     appointed:{
       type:Boolean,
       default:false

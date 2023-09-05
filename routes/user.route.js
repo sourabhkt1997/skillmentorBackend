@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+let path=require("path")
 require("dotenv").config();
 let userRoute = express.Router();
 require("dotenv").config();
@@ -13,22 +14,19 @@ const multer = require('multer');
 const sharp = require('sharp');
 
 // Set up Multer storage
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 25000, // Limit file size to 25 KB
+const absoluteUploadPath = path.join(__dirname,"..","uploads");
+console.log(absoluteUploadPath)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, absoluteUploadPath); // Set the destination folder for uploaded files
   },
-  fileFilter: (req, file, cb) => {
-    const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-    if (allowedMimeTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only PNG, JPG, and JPEG images are allowed.'));
-    }
+  filename: (req, file, cb) => {
+    // Generate a unique file name (you can use a library like `uuid`)
+    const uniqueFileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueFileName);
   },
 });
-
+const upload = multer({ storage });
 
 
 userRoute.post("/signup", async (req, res) => {
@@ -331,38 +329,119 @@ if(typeof subject!=="object"){
 });
 
 
-
-
-
-
+//photo upload route
 userRoute.patch('/upload/:id', upload.single('image'), async (req, res) => {
-
-  let {id}=req.params
-  
-  console.log(id)
   try {
+    const { id } = req.params;
+    
     if (!req.file) {
-      return res.status(400).json({ message: 'No image file uploaded.' });
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // Resize and convert the image to PNG format using sharp
-    const resizedImageBuffer = await sharp(req.file.buffer)
-      .resize(300, 300) // Resize to your desired dimensions
-      .toFormat('png')
-      .toBuffer();
-
-       // Convert the resized image buffer to a base64-encoded string
-    const base64Image = resizedImageBuffer.toString('base64');
-    // Save the resized image to the user's image field
-    await UserModel.findByIdAndUpdate({_id:id},{image:base64Image})
+    // Update the user document with the image path
+    const imagePath = req.file.path;
+    const userData = await UserModel.findByIdAndUpdate(
+      id,
+      {  uploadedimage: imagePath }
+    );
      
-    let data=await UserModel.findOne({_id:id})
-    res.status(201).json({ message: 'Image uploaded and saved.',msg:data });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'An error occurred.' });
+    if (!userData) {
+     
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log(userData)
+    const pathofimage = userData.image;
+     // Read the image file into a buffer
+     const imageBuffer = fs.readFileSync(pathofimage);
+      // Convert the image buffer to a base64-encoded string
+    const imageBase64 = imageBuffer.toString('base64');
+
+     userData.uploadedimage = imageBase64;
+    // Set the appropriate content type based on the image format
+    const contentType = determineContentType(pathofimage);
+    res.setHeader('Content-Type', contentType);
+
+
+    // Respond with the updated user object
+    res.status(201).send({ msg: userData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred during file upload' });
   }
 });
+
+//to show the image in the profile page
+userRoute.get('/api/images/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Replace with the logic to retrieve user data based on userId from your database
+    const userData = await UserModel.findOne({ _id: userId });
+
+    if (!userData || !userData.uploadedimage) {
+      return res.status(404).json({ error: 'User not found or image not available' });
+    }
+
+    // Construct the image path from user data
+    const imagePath = userData.uploadedimage;
+
+    // Read the image file into a buffer
+    const imageBuffer = fs.readFileSync(imagePath);
+
+    // Convert the image buffer to a base64-encoded string
+    const imageBase64 = imageBuffer.toString('base64');
+
+    // Include the image data in the response
+    userData.uploadedimage = imageBase64;
+
+    // Set the appropriate content type based on the image format
+    const contentType = determineContentType(imagePath);
+    res.setHeader('Content-Type', contentType);
+
+    // Send the user data with the base64-encoded image
+    res.send({ msg: userData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching user data' });
+  }
+});
+// Helper function to determine content type based on file extension
+function determineContentType(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    // Add more cases as needed for other image formats
+    default:
+      return 'application/octet-stream'; // Default to binary data
+  }
+}
+
+userRoute.get("/search", async (req, res) => {
+  try {
+    
+    let { subject } = req.query;
+  const data = await UserModel.find({
+    $and: [
+      { subject: { $regex: subject, $options: "i" } },
+      { role: "tutor" },
+      { appointed: true }
+    ]
+  });
+
+  res.status(200).send({msg:data})
+  } catch (error) {
+    res.status(400).send({msg:error.message})
+  }
+  
+  
+
+});
+
+
 
 
 
