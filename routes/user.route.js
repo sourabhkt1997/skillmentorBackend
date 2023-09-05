@@ -246,15 +246,23 @@ userRoute.get("/appointedtutor",async(req,res)=>{
   try {
 
     let data=await UserModel.find(x)
-     if(data.uploadedimage){
-      const imagePath = data.uploadedimage;
-      const imageBuffer = fs.readFileSync(imagePath);
-      const imageBase64 = imageBuffer.toString('base64');
-      data.uploadedimage = imageBase64;
-      const contentType = determineContentType(imagePath);
-      res.setHeader('Content-Type', contentType);
-     }
-    res.status(200).send({msg:data})
+    let newdata=data.map((ele) => {
+      if(ele.uploadedimage){
+        const imagePath = ele.uploadedimage;
+        const imageBuffer = fs.readFileSync(imagePath);
+        const imageBase64 = imageBuffer.toString('base64');
+        ele.uploadedimage = imageBase64;
+        const contentType = determineContentType(imagePath);
+        res.setHeader('Content-Type', contentType);
+        return ele
+       }
+       else{
+        return ele
+       }
+      
+    });
+     
+    res.status(200).send({msg:newdata})
     
   } catch (error) {
     res.status(400).send({msg:error.message})
