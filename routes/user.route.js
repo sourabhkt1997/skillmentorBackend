@@ -236,38 +236,37 @@ userRoute.get("/search", async (req, res) => {
 
 });
 //  to get all the tutor that admin verified
-userRoute.get("/appointedtutor",async(req,res)=>{
-  let x={role:"tutor",appointed:true}
-  let {id}=req.query
-  if(id){
-    x._id=id
+userRoute.get("/appointedtutor", async (req, res) => {
+  res.setHeader('Content-Type', 'application/json'); // Set the content type for the entire response
+  
+  let x = { role: "tutor", appointed: true };
+  let { id } = req.query;
+  if (id) {
+    x._id = id;
   }
- 
-  try {
 
-    let data=await UserModel.find(x)
-    let newdata=data.map((ele) => {
-      if(ele.uploadedimage){
-        const imagePath = ele.uploadedimage;
-        const imageBuffer = fs.readFileSync(imagePath);
-        const imageBase64 = imageBuffer.toString('base64');
-        ele.uploadedimage = imageBase64;
-        const contentType = determineContentType(imagePath);
-        res.setHeader('Content-Type', contentType);
-        return ele
-       }
-       else{
-        return ele
-       }
-      
-    });
-     
-    res.status(200).send({msg:newdata})
-    
+  try {
+    let data = await UserModel.find(x);
+
+    // Use async/await for asynchronous file reading
+    let newdata = await Promise.all(
+      data.map(async (ele) => {
+        if (ele.uploadedimage) {
+          const imagePath = ele.uploadedimage;
+          const imageBuffer = await fs.promises.readFile(imagePath); // Use async file reading
+          const imageBase64 = imageBuffer.toString('base64');
+          ele.uploadedimage = imageBase64;
+        }
+        return ele;
+      })
+    );
+
+    res.status(200).send({ msg: newdata });
   } catch (error) {
-    res.status(400).send({msg:error.message})
+    res.status(400).send({ msg: error.message });
   }
-})
+});
+
 
 
 userRoute.get("/tutor",async(req,res)=>{
