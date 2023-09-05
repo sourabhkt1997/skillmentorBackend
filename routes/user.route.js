@@ -358,7 +358,7 @@ userRoute.patch('/upload/:id', upload.single('image'), async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     console.log(userData)
-    const pathofimage = userData.image;
+    const pathofimage = userData.uploadedimage;
      // Read the image file into a buffer
      const imageBuffer = fs.readFileSync(pathofimage);
       // Convert the image buffer to a base64-encoded string
