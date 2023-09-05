@@ -246,6 +246,14 @@ userRoute.get("/appointedtutor",async(req,res)=>{
   try {
 
     let data=await UserModel.find(x)
+     if(data.uploadedimage){
+      const imagePath = data.uploadedimage;
+      const imageBuffer = fs.readFileSync(imagePath);
+      const imageBase64 = imageBuffer.toString('base64');
+      data.uploadedimage = imageBase64;
+      const contentType = determineContentType(imagePath);
+      res.setHeader('Content-Type', contentType);
+     }
     res.status(200).send({msg:data})
     
   } catch (error) {
