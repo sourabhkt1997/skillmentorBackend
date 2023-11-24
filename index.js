@@ -26,9 +26,6 @@ app.use("/",authRoute)
 app.use("/user",userRoute)
 app.use("/slot",slotRoute)
 app.use("/payment",paymentroute)
-// app.use(authenticate);
-// app.use("/teacher", teacherRouter);
-// app.use(slotRoute);
 
 app.listen(port, async () => {
   try {
