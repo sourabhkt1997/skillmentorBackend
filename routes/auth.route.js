@@ -26,7 +26,7 @@ authRoute.get("/auth/google/callback", passport.authenticate('google', {
     res.cookie("refreshToken", refreshToken, { httpOnly: true });
     if (user) {
       user.password = undefined;
-      res.redirect(`https://bejewelled-alfajores-a97773.netlify.app?userdata=${encodeURIComponent(JSON.stringify(user))}`)
+      res.redirect(`https://graceful-torrone-89fd8e.netlify.app?userdata=${encodeURIComponent(JSON.stringify(user))}`)
     } else {
       res.send('failed to connect')
     }
