@@ -26,7 +26,7 @@ authRoute.get("/auth/google/callback", passport.authenticate('google', {
     res.cookie("refreshToken", refreshToken, { httpOnly: true });
     if (user) {
       user.password = undefined;
-      res.redirect(`https://65641af99094617578bbdac5--jazzy-bubblegum-73f8fa.netlify.app?userdata=${encodeURIComponent(JSON.stringify(user))}`)
+      res.redirect(`https://6564dedf2b30740c6aeac41b--playful-sprite-4bb8c3.netlify.app?userdata=${encodeURIComponent(JSON.stringify(user))}`)
     } else {
       res.send('failed to connect')
     }
