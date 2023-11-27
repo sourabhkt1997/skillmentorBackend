@@ -14,19 +14,19 @@ const multer = require('multer');
 const sharp = require('sharp');
 
 // Set up Multer storage
-const absoluteUploadPath = path.join(__dirname,"..","uploads");
-console.log(absoluteUploadPath)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, absoluteUploadPath); // Set the destination folder for uploaded files
-  },
-  filename: (req, file, cb) => {
-    // Generate a unique file name (you can use a library like `uuid`)
-    const uniqueFileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueFileName);
-  },
-});
-const upload = multer({ storage });
+// const absoluteUploadPath = path.join(__dirname,"..","uploads");
+// console.log(absoluteUploadPath)
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, absoluteUploadPath); // Set the destination folder for uploaded files
+//   },
+//   filename: (req, file, cb) => {
+//     // Generate a unique file name (you can use a library like `uuid`)
+//     const uniqueFileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+//     cb(null, uniqueFileName);
+//   },
+// });
+// const upload = multer({ storage });
 
 
 userRoute.post("/signup", async (req, res) => {
@@ -89,6 +89,7 @@ userRoute.post("/login", async (req, res) => {
          res.status(200).send({msg:"login success full",
         data:userDataQueryParam,
         role:userData[0].role,
+        "userinfo":userData[0],
        status:200})
       } else {
         res.status(400);
@@ -247,19 +248,6 @@ userRoute.get("/appointedtutor", async (req, res) => {
   try {
     let data = await UserModel.find(x);
 
-    // Use async/await for asynchronous file reading
-    let newdata = await Promise.all(
-      data.map(async (ele) => {
-        if (ele.uploadedimage) {
-          const imagePath = ele.uploadedimage;
-          const imageBuffer = fs.readFileSync(imagePath);
-          const imageBase64 = imageBuffer.toString('base64');
-          ele.uploadedimage = imageBase64;
-        }
-        return ele;
-      })
-    );
-
     res.status(200).send({ msg: data });
   } catch (error) {
     res.status(400).send({ msg: error.message });
@@ -344,40 +332,15 @@ if(typeof subject!=="object"){
 
 
 //photo upload route
-userRoute.patch('/upload/:id', upload.single('image'), async (req, res) => {
+userRoute.patch('/upload/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    // Update the user document with the image path
-    const imagePath = req.file.path;
+    let {uploadedimage}=req.body
     const userData = await UserModel.findByIdAndUpdate(
       id,
-      {  uploadedimage: imagePath }
+      {  uploadedimage:uploadedimage}
     );
-     
-    if (!userData) {
-     
-      return res.status(404).json({ error: 'User not found' });
-    }
-    console.log(userData)
-    const pathofimage = userData.uploadedimage;
-     // Read the image file into a buffer
-     const imageBuffer = fs.readFileSync(pathofimage);
-      // Convert the image buffer to a base64-encoded string
-    const imageBase64 = imageBuffer.toString('base64');
-
-     userData.uploadedimage = imageBase64;
-    // Set the appropriate content type based on the image format
-    const contentType = determineContentType(pathofimage);
-    res.setHeader('Content-Type', contentType);
-
-
-    // Respond with the updated user object
-    res.status(201).send({ msg: userData });
+    res.status(200).json({msg:"image uploaded successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred during file upload' });
@@ -387,52 +350,22 @@ userRoute.patch('/upload/:id', upload.single('image'), async (req, res) => {
 //to show the image in the profile page
 userRoute.get('/api/images/:userId', async (req, res) => {
   const { userId } = req.params;
-
   try {
-    // Replace with the logic to retrieve user data based on userId from your database
-    const userData = await UserModel.findOne({ _id: userId });
-
-    if (!userData || !userData.uploadedimage) {
-      return res.status(404).json({ error: 'User not found or image not available' });
+    let data=await UserModel.findOne({_id:userId})
+    if(data){
+      res.status(200).send({msg:data})
     }
-
-    // Construct the image path from user data
-    const imagePath = userData.uploadedimage;
-
-    // Read the image file into a buffer
-    const imageBuffer = fs.readFileSync(imagePath);
-
-    // Convert the image buffer to a base64-encoded string
-    const imageBase64 = imageBuffer.toString('base64');
-
-    // Include the image data in the response
-    userData.uploadedimage = imageBase64;
-
-    // Set the appropriate content type based on the image format
-    const contentType = determineContentType(imagePath);
-    res.setHeader('Content-Type', contentType);
-
-    // Send the user data with the base64-encoded image
-    res.send({ msg: userData });
+    else{
+      res.status(400).send({msg:"user not found"})
+    }
+    
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching user data' });
+    res.status(400).send({msg:error.message})
+    console.log(error)
   }
+
 });
-// Helper function to determine content type based on file extension
-function determineContentType(filename) {
-  const ext = path.extname(filename).toLowerCase();
-  switch (ext) {
-    case '.jpg':
-    case '.jpeg':
-      return 'image/jpeg';
-    case '.png':
-      return 'image/png';
-    // Add more cases as needed for other image formats
-    default:
-      return 'application/octet-stream'; // Default to binary data
-  }
-}
+
 
 userRoute.get("/search", async (req, res) => {
   try {
