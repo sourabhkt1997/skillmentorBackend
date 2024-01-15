@@ -13,6 +13,7 @@ const { authRoute } = require("./routes/auth.route");
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
 let cookieparser=require("cookie-parser");
 const { slotRoute } = require("./routes/slot.route");
 const { paymentroute } = require("./routes/payment.route");
