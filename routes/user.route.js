@@ -238,7 +238,7 @@ userRoute.get("/search", async (req, res) => {
 });
 //  to get all the tutor that admin verified
 userRoute.get("/appointedtutor", async (req, res) => {
-  res.setHeader('Content-Type', 'application/json'); 
+  // res.setHeader('Content-Type', 'application/json'); 
   let x = { role: "tutor", appointed: true };
   let { id } = req.query;
   if (id) {
